@@ -17,4 +17,4 @@ checkpoints/
 *.pth
 metrics.csv
 
-/testignore/
+/testigore/
