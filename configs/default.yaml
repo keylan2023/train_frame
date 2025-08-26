@@ -1,0 +1,64 @@
+# All knobs for the run live here — change this file, not the code.
+training:
+  seed: 42
+  device: "auto"          # "auto" | "cpu" | "cuda" | "mps"
+  epochs: 10
+  grad_clip: null         # e.g., 1.0
+  grad_accum_steps: 1
+  mixed_precision: false  # true/false; uses torch.cuda.amp
+  log_interval: 50
+  ckpt_dir: "outputs/exp1"
+  resume_from: null       # path to checkpoint.pth to resume from
+  monitor: "val/accuracy" # metric to monitor for early stop & checkpoint
+  monitor_mode: "max"     # "max" or "min"
+
+data:
+  target: "data.synthetic.ClassificationSynthetic"
+  params:
+    num_classes: 3
+    samples_per_class: 400
+    input_dim: 32
+    train_ratio: 0.8
+    batch_size: 64
+    num_workers: 2
+
+model:
+  target: "models.mlp.MLP"
+  params:
+    input_dim: 32
+    hidden_dims: [128, 64]
+    num_classes: 3
+    dropout: 0.1
+
+loss:
+  target: "losses.cross_entropy.CrossEntropyLoss"
+  params: {}
+
+optimizer:
+  target: "torch.optim.Adam"
+  params:
+    lr: 1e-3
+    weight_decay: 0.0
+
+scheduler:
+  target: "torch.optim.lr_scheduler.StepLR"
+  params:
+    step_size: 5
+    gamma: 0.1
+
+metrics:
+  accuracy:
+    target: "metrics.accuracy.Accuracy"
+    params: { top_k: 1 }
+
+callbacks:
+  - target: "callbacks.model_checkpoint.ModelCheckpoint"
+    params:
+      save_top_k: 1   # keep best k
+      mode: "max"     # "max" or "min"
+  - target: "callbacks.early_stopping.EarlyStopping"
+    params:
+      patience: 5
+      mode: "max"
+  - target: "callbacks.lr_monitor.LearningRateMonitor"
+    params: {}
